@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pastebin</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+        textarea { width: 100%; height: 200px; }
+        button { display: block; margin-top: 10px; }
+        #link { margin-top: 10px; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h2>Paste your text below</h2>
+    <textarea id="text"></textarea>
+    <button onclick="saveText()">Save</button>
+    <div id="link"></div>
+
+    <script>
+        function saveText() {
+            const text = document.getElementById("text").value;
+            if (!text) return;
+            const id = btoa(encodeURIComponent(text));
+            const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
+            document.getElementById("link").innerHTML = `Saved! Share this link: <a href="${url}">${url}</a>`;
+        }
+
+        function loadText() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has("id")) {
+                const text = decodeURIComponent(atob(params.get("id")));
+                document.getElementById("text").value = text;
+            }
+        }
+
+        window.onload = loadText;
+    </script>
+</body>
+</html>
