@@ -21,7 +21,7 @@
         function saveText() {
             const text = document.getElementById("text").value;
             if (!text) return;
-            const id = btoa(encodeURIComponent(text));
+            const id = btoa(unescape(encodeURIComponent(text)));
             const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
             const rawUrl = `${window.location.origin}${window.location.pathname}?id=${id}&raw=1`;
             document.getElementById("link").innerHTML = `Saved! Share this link: <a href="${url}">${url}</a><br>Raw: <a href="${rawUrl}">${rawUrl}</a>`;
@@ -30,9 +30,10 @@
         function loadText() {
             const params = new URLSearchParams(window.location.search);
             if (params.has("id")) {
-                const text = decodeURIComponent(atob(params.get("id")));
+                const text = decodeURIComponent(escape(atob(params.get("id"))));
                 if (params.has("raw")) {
                     document.body.innerText = text;
+                    document.body.style.whiteSpace = "pre"; // Preserve formatting
                 } else {
                     document.getElementById("text").value = text;
                 }
