@@ -33,7 +33,8 @@
                 const text = decodeURIComponent(escape(atob(params.get("id"))));
                 if (params.has("raw")) {
                     document.body.innerText = text;
-                    document.body.style.whiteSpace = "pre"; // Preserve formatting
+                    document.body.style.whiteSpace = "pre";
+                    document.contentType = "text/plain"; // Set content type to plain text
                 } else {
                     document.getElementById("text").value = text;
                 }
