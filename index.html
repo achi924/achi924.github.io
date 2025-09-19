@@ -1,375 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dark Script Hub</title>
-    <style>
-      :root {
-        --dark-bg: #000000;
-        --medium-bg: #1a1a1a;
-        --light-bg: #2d2d2d;
-        --text-light: #cccccc;
-        --border: #4d4d4d;
-        --success: #28a745;
-        --error: #dc3545;
-      }
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Minecraft Tick Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Minecraft Tick Calculator</h1>
+      <p class="lead">แปลงระหว่าง <strong>ticks</strong>, <strong>วินาที</strong> และ <strong>นาที</strong> — 1 วินาที = 20 ticks</p>
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-        scrollbar-width: none; /* Firefox */
-      }
+      <div class="grid">
+        <div class="field">
+          <label for="ticks">Ticks</label>
+          <input id="ticks" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="small">ป้อนจำนวน ticks (ตัวอย่าง: 1200 = 1 นาที)</div>
+        </div>
 
-      *::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera */
-      }
+        <div class="field">
+          <label for="seconds">วินาที</label>
+          <input id="seconds" type="number" inputmode="numeric" min="0" step="0.01" value="0">
+          <div class="small">ป้อนวินาที (1 วินาที = 20 ticks)</div>
+        </div>
 
-      body {
-        background: var(--dark-bg);
-        color: var(--text-light);
-        min-height: 100vh;
-        padding: 20px;
-        overflow-x: hidden;
-        position: relative;
-      }
+        <div class="field">
+          <label for="minutes">นาที</label>
+          <input id="minutes" type="number" inputmode="numeric" min="0" step="0.001" value="0">
+          <div class="small">ป้อนนาที (1 นาที = 60 วินาที = 1200 ticks)</div>
+        </div>
 
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--border);
-      }
+        <div class="field">
+          <label>ผลลัพธ์</label>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div id="readable" style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);">0 ticks — 0.00 วินาที — 0.000 นาที</div>
+            <div class="small">นอกจากนี้มีปุ่ม Preset ด้านล่างสำหรับค่าเร็ว ๆ</div>
+          </div>
+        </div>
+      </div>
 
-      .title {
-        font-size: 28px;
-      }
+      <div style="height:12px"></div>
 
-      .search-box {
-        display: flex;
-        gap: 10px;
-        flex: 1;
-        max-width: 1750px;
-      }
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="presets">
+          <button class="btn" data-ticks="20">1 วินาที</button>
+          <button class="btn" data-ticks="100">5 วินาที</button>
+          <button class="btn" data-ticks="600">30 วินาที</button>
+          <button class="btn" data-ticks="1200">1 นาที</button>
+          <button class="btn" data-ticks="6000">5 นาที</button>
+          <button class="btn" data-ticks="24000">1 วัน (20 นาที)</button>
+        </div>
 
-      .search-input {
-        padding: 10px 15px;
-        border: 1px solid var(--border);
-        background: black;
-        color: var(--text-light);
-        border-radius: 5px;
-        width: 100%;
-      }
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn primary" id="reset">รีเซ็ต</button>
+          <button class="btn copy" id="copy">คัดลอกผล</button>
+        </div>
+      </div>
 
-      .search-button {
-        padding: 10px 20px;
-        background: black;
-        color: var(--text-light);
-        border: 1px solid var(--border);
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
-
-      .search-button:hover {
-        background: var(--border);
-      }
-
-      .scripts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 15px;
-        margin-bottom: 80px;
-      }
-
-      .script-card {
-        background: var(--medium-bg);
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 300px;
-      }
-
-      .script-image {
-        width: 100%;
-        height: 120px;
-        object-fit: cover;
-        background: var(--dark-bg);
-      }
-
-      .script-content {
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-      }
-
-      .script-title {
-        font-size: 16px;
-        margin-bottom: 5px;
-      }
-
-      .script-info {
-        opacity: 0.8;
-        font-size: 12px;
-        margin-bottom: 8px;
-      }
-
-      .copy-button {
-        width: 100%;
-        padding: 8px;
-        background: var(--light-bg);
-        color: var(--text-light);
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-        margin-top: auto;
-      }
-
-      .copy-button:hover {
-        background: var(--border);
-      }
-
-      .loader {
-        border: 4px solid var(--border);
-        border-top: 4px solid var(--text-light);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 50px auto;
-      }
-
-      .notification {
-        position: fixed;
-        bottom: 80px;
-        right: 20px;
-        background: var(--success);
-        color: white;
-        padding: 15px 25px;
-        border-radius: 5px;
-        display: none;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.4s ease;
-        z-index: 9999;
-      }
-
-      .page-indicator {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--medium-bg);
-        color: var(--text-light);
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-size: 16px;
-        opacity: 0.85;
-        border: 1px solid var(--border);
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <div class="search-box">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search scripts..."
-          id="searchInput"
-        />
-        <button class="search-button" onclick="newSearch()">Search</button>
+      <div class="footer">
+        <div class="small">สูตร: 1 วินาที = 20 ticks → ticks = seconds × 20 → seconds = ticks / 20</div>
+        <div class="small">สร้างโดย ChatGPT • เวอร์ชัน HTML เดียว</div>
       </div>
     </div>
+  </div>
 
-    <div class="scripts-grid" id="scriptsContainer">
-      <div class="loader"></div>
-    </div>
-
-    <div class="notification" id="notification"></div>
-    <div class="page-indicator" id="pageIndicator">Page 1</div>
-
-    <script>
-      let scriptsData = [];
-      let page = 1;
-      let isLoading = false;
-      let searchTerm = "";
-      const proxies = [
-        "https://cors-anywhere.herokuapp.com/",
-        "https://api.codetabs.com/v1/proxy/?quest=",
-        "https://thingproxy.freeboard.io/fetch/",
-      ];
-      let currentProxy = 0;
-
-      async function fetchWithRetry(url, retries = 3) {
-        try {
-          const proxyUrl = proxies[currentProxy] + encodeURIComponent(url);
-          const response = await fetch(proxyUrl);
-          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-          return response.json();
-        } catch (error) {
-          if (retries > 0) {
-            currentProxy = (currentProxy + 1) % proxies.length;
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            return fetchWithRetry(url, retries - 1);
-          }
-          throw error;
-        }
-      }
-
-      async function loadScripts() {
-        if (isLoading) return;
-        isLoading = true;
-        const container = document.getElementById("scriptsContainer");
-        if (page === 1) container.innerHTML = '<div class="loader"></div>';
-
-        try {
-          const apiUrl = searchTerm
-            ? `https://scriptblox.com/api/script/search?q=${encodeURIComponent(
-                searchTerm
-              )}&page=${page}`
-            : `https://scriptblox.com/api/script/fetch?page=${page}`;
-
-          const data = await fetchWithRetry(apiUrl);
-          const newScripts = data.result?.scripts || [];
-          scriptsData = scriptsData.concat(newScripts);
-
-          if (page === 1) container.innerHTML = "";
-
-          newScripts.forEach((script, index) => {
-            const imageUrl = script.image
-              ? script.image.startsWith("http")
-                ? script.image
-                : `https://scriptblox.com${script.image}`
-              : "https://placehold.co/220x120/2d2d2d/808080?text=No+Image";
-
-            const card = document.createElement("div");
-            card.className = "script-card";
-            card.innerHTML = `
-            <img src="${imageUrl}" 
-                 class="script-image"
-                 onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
-            <div class="script-content">
-              <h3 class="script-title">${script.title}</h3>
-              <p class="script-info">${
-                script.game?.name || "No game specified"
-              }</p>
-              <p class="script-info">Views: ${
-                script.views?.toLocaleString() || "N/A"
-              }</p>
-              <button class="copy-button" data-index="${
-                scriptsData.length - newScripts.length + index
-              }">Copy Script</button>
-            </div>
-          `;
-            container.appendChild(card);
-          });
-
-          document.querySelectorAll(".copy-button").forEach((btn) => {
-            btn.onclick = handleCopy;
-          });
-
-          updatePageIndicator();
-
-          if (newScripts.length === 0 && page > 1) {
-            showMessage("No more scripts to load!", false);
-          }
-
-          isLoading = false;
-          page++;
-        } catch (error) {
-          showMessage(`Failed to load: ${error.message}`, false);
-          isLoading = false;
-        }
-      }
-
-      function handleCopy(event) {
-        const index = event.target.dataset.index;
-        const script = scriptsData[index]?.script;
-
-        if (!script) {
-          showMessage("No script found", false);
-          return;
-        }
-
-        const textarea = document.createElement("textarea");
-        textarea.value = script;
-        document.body.appendChild(textarea);
-        textarea.select();
-
-        try {
-          document.execCommand("copy");
-          showMessage("Script copied!", true);
-        } catch (err) {
-          showMessage("Failed to copy script", false);
-        }
-
-        document.body.removeChild(textarea);
-      }
-
-      function newSearch() {
-        searchTerm = document.getElementById("searchInput").value.trim();
-        page = 1;
-        scriptsData = [];
-        loadScripts();
-      }
-
-      function showMessage(text, success = true) {
-        const notif = document.getElementById("notification");
-        notif.textContent = text;
-        notif.style.background = success ? "var(--success)" : "var(--error)";
-        notif.style.display = "block";
-        setTimeout(() => {
-          notif.style.opacity = 1;
-          notif.style.transform = "translateY(0)";
-        }, 10);
-        setTimeout(() => {
-          notif.style.opacity = 0;
-          notif.style.transform = "translateY(20px)";
-          setTimeout(() => (notif.style.display = "none"), 400);
-        }, 3000);
-      }
-
-      function updatePageIndicator() {
-        const pageIndicator = document.getElementById("pageIndicator");
-        pageIndicator.textContent = `Page ${page - 1}`;
-      }
-
-      window.onload = () => {
-        loadScripts();
-        document
-          .getElementById("searchInput")
-          .addEventListener("keypress", (e) => {
-            if (e.key === "Enter") newSearch();
-          });
-
-        window.addEventListener("scroll", () => {
-          if (
-            window.innerHeight + window.scrollY >=
-            document.body.offsetHeight - 300
-          ) {
-            loadScripts();
-          }
-        });
-      };
-    </script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
