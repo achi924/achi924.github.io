@@ -110,6 +110,16 @@
           <button class="btn" id="copy">คัดลอกผล</button>
           <button class="btn" id="theme-toggle">เปลี่ยนธีม</button>
           <button class="btn" id="music-toggle">🎵 Lo-fi</button>
+        
+          <input
+            id="volume-slider"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            style="width:110px"
+            title="Volume"
+          >
           <button class="btn" id="lang-toggle">EN/TH</button>
         </div>
       </div>
@@ -122,7 +132,6 @@
   </div>
 
     <audio id="lofi-audio" loop>
-      <source src="lofi.mp3" type="audio/mpeg">
       เบราว์เซอร์ของคุณไม่รองรับ audio
     </audio>
 
@@ -274,24 +283,78 @@
 
     const audio = document.getElementById('lofi-audio');
     const musicBtn = document.getElementById('music-toggle');
-    let playing = false;
-  
-    musicBtn.addEventListener('click', async () => {
+    const volumeSlider = document.getElementById('volume-slider');
+    
+    /* 🎼 playlist */
+    const playlist = [
+      './lofi/lofi1.mp3',
+      './lofi/lofi2.mp3',
+      './lofi/lofi3.mp3'
+    ];
+    
+    let isPlaying = false;
+    
+    /* 🎲 สุ่มเพลง */
+    function loadRandomTrack() {
+      const track = playlist[Math.floor(Math.random() * playlist.length)];
+      audio.src = track;
+    }
+    
+    /* 💾 โหลดค่าจาก localStorage */
+    const savedPlaying = localStorage.getItem('lofi-playing') === 'true';
+    const savedVolume = Number(localStorage.getItem('lofi-volume') ?? 0.4);
+    
+    audio.volume = savedVolume;
+    volumeSlider.value = savedVolume;
+    
+    /* 🔊 slider ปรับเสียง */
+    volumeSlider.addEventListener('input', () => {
+      audio.volume = volumeSlider.value;
+      localStorage.setItem('lofi-volume', audio.volume);
+    });
+    
+    /* ▶️ / ⏸ toggle */
+    async function toggleMusic() {
       try {
-        if (!playing) {
-          audio.volume = 0.4; // ปรับความดัง
+        if (!isPlaying) {
+          if (!audio.src) loadRandomTrack();
           await audio.play();
-          playing = true;
+          isPlaying = true;
           musicBtn.textContent = '⏸ Lo-fi';
+          localStorage.setItem('lofi-playing', 'true');
         } else {
           audio.pause();
-          playing = false;
+          isPlaying = false;
           musicBtn.textContent = '🎵 Lo-fi';
+          localStorage.setItem('lofi-playing', 'false');
         }
       } catch (e) {
-        alert('เบราว์เซอร์บล็อกการเล่นเพลง ต้องคลิกก่อน');
+        console.warn('Autoplay blocked');
       }
+    }
+    
+    musicBtn.addEventListener('click', toggleMusic);
+    
+    /* 🎼 เปลี่ยนเพลงใหม่อัตโนมัติเมื่อจบ */
+    audio.addEventListener('ended', () => {
+      loadRandomTrack();
+      audio.play();
     });
+    
+    /* 🎧 Auto-play หลัง user interaction ครั้งแรก */
+    function firstUserInteraction() {
+      if (savedPlaying && !isPlaying) {
+        toggleMusic();
+      }
+      document.removeEventListener('click', firstUserInteraction);
+    }
+    
+    document.addEventListener('click', firstUserInteraction);
+    
+    /* 🔄 restore state */
+    if (savedPlaying) {
+      musicBtn.textContent = '⏸ Lo-fi';
+    }
   </script>
 </body>
 </html>
