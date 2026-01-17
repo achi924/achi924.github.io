@@ -109,6 +109,7 @@
           <button class="btn primary" id="reset">รีเซ็ต</button>
           <button class="btn" id="copy">คัดลอกผล</button>
           <button class="btn" id="theme-toggle">เปลี่ยนธีม</button>
+          <button class="btn" id="music-toggle">🎵 Lo-fi</button>
           <button class="btn" id="lang-toggle">EN/TH</button>
         </div>
       </div>
@@ -119,6 +120,11 @@
       </div>
     </div>
   </div>
+
+    <audio id="lofi-audio" loop>
+      <source src="lofi.mp3" type="audio/mpeg">
+      เบราว์เซอร์ของคุณไม่รองรับ audio
+    </audio>
 
   <script>
     const ticksEl = document.getElementById('ticks');
@@ -265,6 +271,27 @@
 
     // เริ่มต้น
     setLang('th');
+
+    const audio = document.getElementById('lofi-audio');
+    const musicBtn = document.getElementById('music-toggle');
+    let playing = false;
+  
+    musicBtn.addEventListener('click', async () => {
+      try {
+        if (!playing) {
+          audio.volume = 0.4; // ปรับความดัง
+          await audio.play();
+          playing = true;
+          musicBtn.textContent = '⏸ Lo-fi';
+        } else {
+          audio.pause();
+          playing = false;
+          musicBtn.textContent = '🎵 Lo-fi';
+        }
+      } catch (e) {
+        alert('เบราว์เซอร์บล็อกการเล่นเพลง ต้องคลิกก่อน');
+      }
+    });
   </script>
 </body>
 </html>
